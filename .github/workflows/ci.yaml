@@ -1,0 +1,85 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  project-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ----------------------------
+      # CHECKOUT CODE
+      # ----------------------------
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ----------------------------
+      # SETUP PYTHON
+      # ----------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # ----------------------------
+      # CACHE PIP DEPENDENCIES
+      # ----------------------------
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # ----------------------------
+      # INSTALL DEPENDENCIES
+      # ----------------------------
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # ----------------------------
+      # RUN DVC PIPELINE
+      # ----------------------------
+      # - name: Run DVC pipeline
+      #   env:
+      #     CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
+      #   run: |
+      #     dvc repro
+
+      # # ----------------------------
+      # # RUN UNIT TESTS
+      # # ----------------------------
+      # - name: Run Python tests
+      #   run: |
+      #     python -m unittest discover tests/
+
+      # # ----------------------------
+      # # BUILD DOCKER IMAGE
+      # # ----------------------------
+      # - name: Build Docker image
+      #   run: |
+      #     docker build -t yt-sentiment-app:latest .
+
+      # # ----------------------------
+      # # VERIFY DOCKER IMAGE
+      # # ----------------------------
+      # - name: Verify Docker image
+      #   run: |
+      #     docker images
+      #     docker run --rm yt-sentiment-app:latest python --version
+
+      # # ----------------------------
+      # # UPLOAD DOCKER ARTIFACT (OPTIONAL)
+      # # ----------------------------
+      # - name: Upload Docker Build Artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: docker-image-info
+      #     path: |
+      #       Dockerfile
+      #       requirements.txt
