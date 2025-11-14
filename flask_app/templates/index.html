@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YouTube Sentiment Analysis</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+        body {
+            background: #f3f4f6;
+        }
+        .card {
+            border-radius: 12px;
+        }
+        .sentiment-positive {
+            color: green;
+            font-weight: bold;
+        }
+        .sentiment-neutral {
+            color: gray;
+            font-weight: bold;
+        }
+        .sentiment-negative {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">🎥 YouTube Video Sentiment Analysis</h2>
+
+    <!-- Input Card -->
+    <div class="card p-4 shadow">
+        <label class="form-label fw-bold">Enter YouTube Video URL:</label>
+        <input type="text" id="videoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="btn btn-primary mt-3" onclick="analyzeVideo()">Analyze</button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" class="mt-5" style="display:none;">
+        
+        <!-- Summary -->
+        <div class="card p-4 shadow mb-4">
+            <h4 class="mb-3">📊 Sentiment Summary</h4>
+            <div id="summaryStats"></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card p-3 shadow">
+                    <h5 class="text-center">Pie Chart</h5>
+                    <img id="pieChart" src="" class="img-fluid" />
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card p-3 shadow">
+                    <h5 class="text-center">Word Cloud</h5>
+                    <img id="wordcloud" src="" class="img-fluid" />
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card p-3 shadow">
+                    <h5 class="text-center">Trend Graph</h5>
+                    <img id="trendGraph" src="" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Comments -->
+        <div class="card p-4 shadow mt-4">
+            <h4 class="mb-3">📝 Sample Comments</h4>
+            <div id="sampleComments"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function analyzeVideo() {
+    const url = document.getElementById("videoUrl").value;
+    if (!url) {
+        alert("Please enter a YouTube link.");
+        return;
+    }
+
+    // Send POST request to your Flask API
+    const response = await fetch("http://127.0.0.1:5000/analyze_youtube", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ video_url: url })
+    });
+
+    const data = await response.json();
+    console.log(data);
+
+    if (data.error) {
+        alert("Error: " + data.error);
+        return;
+    }
+
+    // Show results section
+    document.getElementById("resultsSection").style.display = "block";
+
+    // 1. Summary Stats
+    const summary = data.summary;
+    document.getElementById("summaryStats").innerHTML = `
+        <p><strong>Total Comments:</strong> ${summary.total_comments}</p>
+        <p><strong>Positive:</strong> ${summary.positive}</p>
+        <p><strong>Neutral:</strong> ${summary.neutral}</p>
+        <p><strong>Negative:</strong> ${summary.negative}</p>
+    `;
+
+    // 2. Charts
+    document.getElementById("pieChart").src = 
+    "http://127.0.0.1:5000/" + data.charts.pie_chart + "?t=" + new Date().getTime();
+
+    document.getElementById("wordcloud").src = 
+    "http://127.0.0.1:5000/" + data.charts.wordcloud + "?t=" + new Date().getTime();
+
+    document.getElementById("trendGraph").src = 
+    "http://127.0.0.1:5000/" + data.charts.trend_graph + "?t=" + new Date().getTime();
+
+    // 3. Sample Comments
+    let html = "";
+    data.sample.forEach(item => {
+        let sentimentClass = "";
+
+        if (item.sentiment === 1) sentimentClass = "sentiment-positive";
+        else if (item.sentiment === 0) sentimentClass = "sentiment-neutral";
+        else sentimentClass = "sentiment-negative";
+
+        html += `
+            <p><strong class="${sentimentClass}">${item.sentiment === 1 ? "Positive" : item.sentiment === 0 ? "Neutral" : "Negative"}</strong> → 
+            ${item.text}</p>
+        `;
+    });
+    document.getElementById("sampleComments").innerHTML = html;
+}
+</script>
+
+</body>
+</html>

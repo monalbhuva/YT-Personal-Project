@@ -208,3 +208,9 @@ __marimo__/
 
 
 cred.txt
+local_s3/
+Data/
+/logreg_bow_model.pkl
+/bow_vectorizer.pkl
+/experiment_info.json
+/confusion_matrix_Test Data.png
