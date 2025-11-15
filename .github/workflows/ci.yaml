@@ -45,11 +45,11 @@ jobs:
       # ----------------------------
       # RUN DVC PIPELINE
       # ----------------------------
-      # - name: Run DVC pipeline
-      #   env:
-      #     CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
-      #   run: |
-      #     dvc repro
+      - name: Run DVC pipeline
+        env:
+          CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
+        run: |
+          dvc repro
 
       # # ----------------------------
       # # RUN UNIT TESTS
